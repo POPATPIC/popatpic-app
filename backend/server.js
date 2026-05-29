@@ -89,3 +89,5 @@ app.post('/api/upload', (req, res) => {
 app.listen(port, () => {
   console.log(`Server menyala di http://localhost:${port}`);
 });
+
+module.exports = app;
