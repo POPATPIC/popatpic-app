@@ -50,7 +50,7 @@ const BoothPage = () => {
         await new Promise(r => setTimeout(r, 1000));
       }
       
-      setCountdown('📸');
+      setCountdown('Cheeze!');
       await new Promise(r => setTimeout(r, 300)); 
 
       const video = videoRef.current;
@@ -74,7 +74,6 @@ const BoothPage = () => {
     setIsShooting(false);
 
     setTimeout(() => {
-      // Lempar figmaWidth ke halaman hasil
       navigate('/result', {
         state: { frameCount, frameImage, photos: tempPhotos, slots, figmaWidth },
       });
@@ -82,43 +81,51 @@ const BoothPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] overflow-hidden">
-      <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow">
-        <div className="mx-auto flex h-20 max-w-5xl items-center justify-between px-5 md:px-10">
-          <button onClick={() => navigate('/')} className="text-2xl font-bold tracking-tighter text-[#6b38d4]">Pop@Pic!</button>
-          <button onClick={() => navigate('/select-frame')} className="rounded-full border border-[#cbc3d7] bg-white/60 px-5 py-2 text-sm font-semibold">← Change Frame</button>
+    // 1. Root: min-h-screen buat mobile, lg:h-screen lg:overflow-hidden buat laptop
+    <div className="min-h-screen lg:h-screen flex flex-col bg-[#f7f9fb] text-[#191c1e] lg:overflow-hidden">
+      <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-sm">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-12">
+          <button onClick={() => navigate('/')} className="text-2xl font-extrabold tracking-tighter text-[#6b38d4]">Pop@Pic!</button>
+          <button onClick={() => navigate('/select-frame')} className="rounded-full border border-[#cbc3d7] bg-white/60 px-5 py-2 text-sm font-semibold hover:bg-white transition-colors">← Change Frame</button>
         </div>
       </header>
 
-      <main className="mx-auto flex h-screen max-w-5xl flex-col px-5 pb-6 pt-24 md:px-10">
+      {/* 2. Main: lg:min-h-0 agar scroll di dalam kotak aktif saat di laptop */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-6 pt-28 pb-10 md:px-12 md:pt-32 flex flex-col lg:min-h-0">
         <div className="mb-4 flex flex-shrink-0 items-center justify-between">
-          <h1 className="text-3xl font-extrabold tracking-tighter md:text-4xl">Pop your <span className="text-[#6b38d4]">Pic!</span></h1>
+          <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl">
+            Pop your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6b38d4] to-[#fd56a7]">Pic!</span>
+          </h1>
         </div>
 
-        <section className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
-          <div className="flex min-h-0 w-full flex-col rounded-[2rem] border bg-white/70 p-4 shadow lg:w-1/2">
-            <div className="relative flex-1 overflow-hidden rounded-[1.5rem] bg-[#eceef0] min-h-0">
+        {/* 3. Section: flex-col buat HP, lg:flex-row buat laptop */}
+        <section className="flex flex-1 flex-col gap-6 lg:flex-row lg:min-h-0">
+          
+          {/* BOX KIRI: KAMERA (Dikasih min-h-[400px] biar gak gepeng di layar kecil) */}
+          <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm min-h-[400px] lg:min-h-0">
+            <div className="relative flex-1 overflow-hidden rounded-[1.5rem] bg-[#eceef0] flex items-center justify-center">
               <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" style={{ transform: 'scaleX(-1)' }} />
               {countdown !== null && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <div className="rounded-full bg-white/90 px-8 py-4 text-5xl font-extrabold text-[#6b38d4]">{countdown}</div>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+                  <div className="rounded-full bg-white/90 px-8 py-4 text-6xl font-extrabold text-[#6b38d4] animate-bounce">{countdown}</div>
                 </div>
               )}
             </div>
-            <div className="mt-4 flex flex-shrink-0 items-center justify-between">
-              <div className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold">{frameCount} poses</div>
-              <button onClick={handleShoot} disabled={isShooting} className="rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] px-8 py-3 font-bold text-white hover:scale-[1.02] disabled:opacity-60">
+            <div className="mt-4 flex flex-shrink-0 items-center justify-between px-2">
+              <div className="rounded-full bg-white/80 px-4 py-2 text-sm font-semibold border border-gray-200 text-[#494454]">{frameCount} poses</div>
+              <button onClick={handleShoot} disabled={isShooting} className="rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] px-8 py-3 font-bold text-white hover:scale-[1.02] disabled:opacity-60 transition-transform shadow-md">
                 {isShooting ? 'Shooting...' : 'Shoot'}
               </button>
             </div>
           </div>
 
-          <div className="flex min-h-0 w-full flex-col rounded-[2rem] border bg-white/70 p-4 shadow lg:w-1/2">
-            <h2 className="text-xl font-bold mb-3">Grid preview</h2>
+          {/* BOX KANAN: PREVIEW FOTO */}
+          <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm min-h-[400px] lg:min-h-0">
+            <h2 className="text-xl font-bold mb-3 px-2">Photo Preview</h2>
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 {shots.map((shot, idx) => (
-                  <div key={shot} className="aspect-[3/4] overflow-hidden rounded-[1.25rem] border bg-[#eceef0]">
+                  <div key={shot} className="aspect-[3/4] overflow-hidden rounded-[1.25rem] border-2 border-gray-100 bg-[#eceef0] shadow-sm">
                     {photos[idx] ? (
                       <img src={photos[idx]} className="h-full w-full object-cover" />
                     ) : (
@@ -129,6 +136,7 @@ const BoothPage = () => {
               </div>
             </div>
           </div>
+          
         </section>
       </main>
     </div>

@@ -1,88 +1,202 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pixelFramePng from '../assets/frames/pixel-frame.png';
+import cuteFramePng from '../assets/frames/cute-frame.png';
+import circusFramePng from '../assets/frames/circus-frame.png';
+import monochromeFramePng from '../assets/frames/monochrome-frame.png';
+import tapeFramePng from '../assets/frames/tape-frame.png';
 
 const SelectFrame = () => {
   const navigate = useNavigate();
   const [activeCount, setActiveCount] = useState(4);
+  const [allFrames, setAllFrames] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const allFrames = [
-    { 
-      id: 'classic-purple', 
-      count: 4, 
-      name: 'Pixel Pastel', 
-      image: pixelFramePng, 
-      tag: 'Popular', 
-      desc: 'Soft neon, playful and vibrant.',
-      figmaWidth: 2756, 
+  const framesSectionRef = useRef(null);
+  const sliderRef = useRef(null);
 
-      slots: [
-        { x: 136, y: 178, w: 1171, h: 1437 },   
-        { x: 1449, y: 178, w: 1171, h: 1437 },  
-        { x: 136, y: 1778, w: 1171, h: 1437 },  
-        { x: 1449, y: 1778, w: 1171, h: 1437 }, 
-      ]
-    },
-    { id: 'minimal-white', count: 4, name: 'Classic White', image: null, tag: 'New', desc: 'Clean, minimal, timeless.', slots: [] },
-  ];
+  useEffect(() => {
+    const imageMap = {
+      'pixel-frame.png': pixelFramePng,
+      'cute-frame.png': cuteFramePng,
+      'circus-frame.png': circusFramePng,
+      'monochrome-frame.png': monochromeFramePng,
+      'tape-frame.png': tapeFramePng
+    };
+
+    fetch('http://localhost:5000/api/frames')
+      .then((response) => response.json())
+      .then((data) => {
+        const formattedData = data.map((dbFrame) => {
+          let parsedSlots = dbFrame.slots;
+          if (typeof parsedSlots === 'string') {
+            parsedSlots = JSON.parse(parsedSlots);
+          }
+          return {
+            id: dbFrame.id,
+            name: dbFrame.name,
+            count: dbFrame.pose_count,
+            image: imageMap[dbFrame.image_url] || null,
+            desc: 'Premium curated frame for your best moments.',
+            figmaWidth: dbFrame.figma_width,
+            slots: parsedSlots
+          };
+        });
+        setAllFrames(formattedData);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Gagal menarik data API:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const filteredFrames = allFrames.filter((f) => f.count === activeCount);
 
+  // Auto-Scroll saat milih pose
+  const handlePoseSelect = (num) => {
+    setActiveCount(num);
+    setTimeout(() => {
+      framesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+  };
+
+  const scrollSlider = (direction) => {
+    if (sliderRef.current) {
+      const scrollAmount = 350;
+      sliderRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f7f9fb] text-[#191c1e]">
-      <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-[0_4px_30px_rgba(139,92,246,0.15)]">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 md:px-10">
-          <button onClick={() => navigate('/')} className="text-2xl font-bold tracking-tighter text-[#6b38d4]">Lumina Booth</button>
-          <button onClick={() => navigate('/')} className="rounded-full border border-[#cbc3d7] bg-white/60 px-5 py-2 text-sm font-semibold text-[#494454]">← Back</button>
+    <div className="bg-[#f7f9fb] text-[#191c1e] font-sans scroll-smooth">
+      
+      {/* NAVBAR */}
+      <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/80 backdrop-blur-xl shadow-sm">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-12">
+          <button onClick={() => navigate('/')} className="text-2xl font-extrabold tracking-tighter text-[#6b38d4] transition-transform hover:scale-105">
+            Pop@Pic!
+          </button>
+          <button 
+            onClick={() => navigate('/')} 
+            className="rounded-full border border-[#e0e3e5] bg-white px-6 py-2 text-sm font-bold text-[#494454] shadow-sm transition-all hover:bg-gray-50 hover:shadow"
+          >
+            ← Back
+          </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-5 pb-20 pt-28 md:px-10">
-        <section className="mb-14">
-          <h2 className="mb-6 text-3xl font-bold tracking-tight md:text-4xl">How many poses?</h2>
-          <div className="flex gap-3 overflow-x-auto pb-2">
+      <main className="mx-auto max-w-7xl px-6">
+        
+        {/* SECTION 1: POSE SELECTION */}
+        <section className="min-h-screen flex flex-col items-center justify-center text-center pt-20">
+          {/* Teks "poses" dikasih warna gradien! */}
+          <h2 className="mb-8 text-4xl font-extrabold tracking-tighter md:text-6xl">
+            How many <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6b38d4] to-[#fd56a7]">poses?</span>
+          </h2>
+          
+          <div className="flex flex-wrap justify-center gap-4 max-w-2xl">
             {[1, 2, 4, 6, 8].map((num) => (
               <button
                 key={num}
-                onClick={() => setActiveCount(num)}
-                className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border-2 text-xl font-bold transition-all md:h-20 md:w-20 ${
-                  activeCount === num ? 'scale-105 border-[#6b38d4] bg-[#6b38d4] text-white shadow-lg' : 'border-white/50 bg-white/70 text-[#494454]'
+                onClick={() => handlePoseSelect(num)}
+                className={`flex items-center justify-center rounded-full px-8 py-3.5 text-base font-bold transition-all duration-300 ${
+                  activeCount === num 
+                    ? 'bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] text-white shadow-lg scale-105' 
+                    : 'bg-white border border-[#e0e3e5] text-[#494454] shadow-sm hover:border-[#6b38d4] hover:text-[#6b38d4] hover:-translate-y-1'
                 }`}
               >
-                {num}
+                {num} Poses
               </button>
             ))}
           </div>
+          <p className="mt-8 text-sm text-gray-400 animate-bounce">Select to continue ↓</p>
         </section>
 
-        <section>
-          <h2 className="mb-8 text-2xl font-bold tracking-tight md:text-3xl">Curated frames</h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {filteredFrames.map((frame) => (
-              <button
-                key={frame.id}
+        {/* SECTION 2: FRAME GALLERY */}
+        <section ref={framesSectionRef} className="min-h-screen flex flex-col justify-center pt-10 pb-20">
+          <div className="w-full">
+            
+            {/* Heading Curated Frames diubah jadi label kecil elegan */}
+            <h2 className="mb-6 text-sm font-bold tracking-widest text-gray-400 uppercase text-center">
+              Curated Frames
+            </h2>
+            
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-[#6b38d4]">
+                <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="font-bold animate-pulse">Memuat desain frame...</p>
+              </div>
+            ) : (
+              <div className="relative group w-full">
+                
+                {/* Tombol Panah Kiri */}
+                <button 
+                  onClick={() => scrollSlider('left')}
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 z-10 h-12 w-12 items-center justify-center rounded-full bg-white text-[#6b38d4] shadow-xl border border-[#e0e3e5] opacity-0 transition-opacity group-hover:opacity-100 hover:scale-110 ${filteredFrames.length > 3 ? 'md:flex hidden' : 'hidden'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
 
-                onClick={() => navigate('/booth', { state: { frameCount: frame.count, frameImage: frame.image, slots: frame.slots, figmaWidth: frame.figmaWidth } })}
-                className="group text-left"
-              >
-                <div className="overflow-hidden rounded-[2rem] border border-white/50 bg-white/70 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <div className="relative mb-4 aspect-[3/4] overflow-hidden rounded-[1.5rem] bg-[#eceef0]">
-                    {frame.image ? (
-                      <img src={frame.image} alt={frame.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    ) : (
-                      <div className="flex h-full w-full flex-col items-center justify-center text-[#cbc3d7]">
-                        <span className="text-5xl">🖼</span><p className="mt-2 text-xs font-semibold">No preview</p>
+                {/* Slider Container */}
+                <div 
+                  ref={sliderRef}
+                  className={`flex gap-8 overflow-x-auto snap-x snap-mandatory pb-8 pt-4 px-2 no-scrollbar ${filteredFrames.length < 4 ? 'justify-center' : ''}`}
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {filteredFrames.map((frame) => (
+                    <button
+                      key={frame.id}
+                      onClick={() => navigate('/booth', { state: { frameCount: frame.count, frameImage: frame.image, slots: frame.slots, figmaWidth: frame.figmaWidth } })}
+                      className="group text-left min-w-[280px] max-w-[320px] shrink-0 snap-center"
+                    >
+                      <div className="overflow-hidden rounded-[2.5rem] border border-[#e0e3e5] bg-white p-5 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:border-white h-full">
+                        <div className="relative mb-5 aspect-[3/4] w-full overflow-hidden rounded-[1.5rem] bg-[#f3ebff]">
+                          {frame.image ? (
+                            <img 
+                              src={frame.image} 
+                              alt={frame.name} 
+                              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                            />
+                          ) : (
+                            <div className="flex h-full w-full flex-col items-center justify-center text-[#cbc3d7]">
+                              <span className="text-5xl mb-2">🖼</span>
+                              <p className="text-xs font-bold uppercase tracking-widest">No preview</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="px-2 pb-2 text-center md:text-left">
+                          <h3 className="text-2xl font-extrabold text-[#191c1e] transition-colors group-hover:text-[#6b38d4]">{frame.name}</h3>
+                          <p className="mt-1 text-sm font-medium text-[#494454] line-clamp-2">{frame.desc}</p>
+                        </div>
                       </div>
-                    )}
-                    <div className="absolute left-3 top-3 rounded-full bg-[#fd56a7] px-3 py-1 text-[10px] font-bold uppercase text-white">{frame.tag}</div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-[#191c1e]">{frame.name}</h3>
-                    <p className="mt-1 text-sm text-[#494454]">{frame.desc}</p>
-                  </div>
+                    </button>
+                  ))}
+
+                  {filteredFrames.length === 0 && (
+                    <div className="w-full shrink-0 rounded-[2.5rem] border-2 border-dashed border-[#e0e3e5] bg-white/50 py-24 text-center snap-center max-w-lg">
+                      <span className="text-4xl mb-4 block">👀</span>
+                      <p className="text-lg font-bold text-[#494454]">Belum ada frame untuk {activeCount} poses.</p>
+                      <p className="text-sm text-gray-400 mt-1">Coba pilih jumlah pose yang lain ya!</p>
+                    </div>
+                  )}
                 </div>
-              </button>
-            ))}
+
+                {/* Tombol Panah Kanan */}
+                <button 
+                  onClick={() => scrollSlider('right')}
+                  className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 z-10 h-12 w-12 items-center justify-center rounded-full bg-white text-[#6b38d4] shadow-xl border border-[#e0e3e5] opacity-0 transition-opacity group-hover:opacity-100 hover:scale-110 ${filteredFrames.length > 3 ? 'md:flex hidden' : 'hidden'}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+
+              </div>
+            )}
           </div>
         </section>
       </main>
