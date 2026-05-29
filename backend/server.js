@@ -90,4 +90,8 @@ app.listen(port, () => {
   console.log(`Server menyala di http://localhost:${port}`);
 });
 
+// Tambahin ini biar pas link Vercel dibuka nggak 404
+app.get('/', (req, res) => {
+    res.send('Yeay! Backend Pop@Pic! Oya udah nyala di Vercel! 🚀');
+});
 module.exports = app;
