@@ -6,44 +6,53 @@ const ResultPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const canvasRef = useRef(null);
-  
+
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [publicUrl, setPublicUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const { photos, frameImage, slots, figmaWidth } = location.state || {};
+
+  // Utility: load image with crossOrigin set before src
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
 
   useEffect(() => {
     if (!photos || !frameImage || !slots || photos.length === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const ctx = canvas.getContext('2d');
-    const imgFrame = new Image();
-    imgFrame.src = frameImage;
 
-    const loadPhotoImages = photos.map(src => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.src = src;
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-      });
-    });
+    setIsUploading(true);
+    setPublicUrl(null);
+    setDownloadUrl(null);
+    setErrorMessage(null);
 
     Promise.all([
-      new Promise(resolve => imgFrame.onload = () => resolve(imgFrame)),
-      ...loadPhotoImages
+      loadImage(frameImage),
+      ...photos.map(src => loadImage(src))
     ]).then(([loadedFrame, ...loadedPhotos]) => {
-      if (!loadedFrame) return;
+      if (!loadedFrame) {
+        setErrorMessage('Gagal memuat frame. Periksa sumber frameImage.');
+        setIsUploading(false);
+        return;
+      }
 
       canvas.width = loadedFrame.width;
       canvas.height = loadedFrame.height;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const scale = canvas.width / (figmaWidth || canvas.width);
-      const margin = 15; 
+      const margin = 15;
 
       loadedPhotos.forEach((photoImg, index) => {
         if (photoImg && slots[index]) {
@@ -77,40 +86,115 @@ const ResultPage = () => {
 
       ctx.drawImage(loadedFrame, 0, 0);
 
-      const finalImage = canvas.toDataURL("image/png");
-      setDownloadUrl(finalImage);
+      // coba buat dataURL untuk preview/fallback
+      try {
+        const finalDataUrl = canvas.toDataURL('image/png');
+        setDownloadUrl(finalDataUrl);
+      } catch (err) {
+        console.warn('canvas.toDataURL gagal (mungkin tainted):', err);
+        setDownloadUrl(null);
+      }
 
-      // Upload ke Imgur
-      const formData = new FormData();
-      formData.append('image', finalImage.split(',')[1]); 
+      // Upload ke Imgur: gunakan base64 tanpa prefix dan sertakan type=base64
+      try {
+        const base64 = canvas.toDataURL('image/png').split(',')[1];
+        const formData = new FormData();
+        formData.append('image', base64);
+        formData.append('type', 'base64');
 
-      fetch('https://api.imgur.com/3/image', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Client-ID 7447432822d1039',
-        },
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setPublicUrl(data.data.link);
-        }
+        fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: { 'Authorization': 'Client-ID 7447432822d1039' },
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success && data.data && data.data.link) {
+            setPublicUrl(data.data.link);
+          } else {
+            console.error('Imgur response not success', data);
+            setErrorMessage('Upload ke Imgur gagal.');
+          }
+          setIsUploading(false);
+        })
+        .catch(err => {
+          console.error('Gagal upload ke Imgur:', err);
+          setErrorMessage('Gagal upload ke Imgur.');
+          setIsUploading(false);
+        });
+      } catch (err) {
+        console.error('Gagal membuat base64 untuk upload (mungkin canvas tainted):', err);
+        setErrorMessage('Gagal membuat gambar untuk upload. Mungkin karena CORS.');
         setIsUploading(false);
-      })
-      .catch(err => {
-        console.error("Gagal upload ke Imgur:", err);
-        setIsUploading(false);
-      });
+      }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos, frameImage, slots, figmaWidth]);
 
+  // fallback: download dari public URL (fetch -> blob -> download)
+  function downloadFromUrl(url) {
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+        return res.blob();
+      })
+      .then(blob => {
+        const u = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = `PopAtPic-Memory-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(u);
+      })
+      .catch(err => {
+        console.error('Gagal download dari URL publik:', err);
+        alert('Gagal mendownload file otomatis. Silakan buka link publik dan simpan manual.');
+      });
+  }
+
+  // fungsi download utama: coba toBlob, jika gagal fallback ke publicUrl atau dataURL
   const downloadImage = () => {
-    if (!canvasRef.current || !downloadUrl) return;
-    const link = document.createElement('a');
-    link.download = `PopAtPic-Memory-${Date.now()}.png`;
-    link.href = downloadUrl;
-    link.click();
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      alert('Canvas belum siap.');
+      return;
+    }
+
+    try {
+      canvas.toBlob(blob => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `PopAtPic-Memory-${Date.now()}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        } else {
+          if (publicUrl) {
+            downloadFromUrl(publicUrl);
+          } else if (downloadUrl) {
+            const w = window.open(downloadUrl, '_blank');
+            if (!w) alert('Pop-up diblokir. Silakan buka link publik dan simpan manual.');
+          } else {
+            alert('Gagal membuat file untuk diunduh.');
+          }
+        }
+      }, 'image/png');
+    } catch (err) {
+      console.warn('toBlob gagal (mungkin canvas tainted):', err);
+      if (publicUrl) {
+        downloadFromUrl(publicUrl);
+      } else if (downloadUrl) {
+        const w = window.open(downloadUrl, '_blank');
+        if (!w) alert('Pop-up diblokir. Silakan buka link publik dan simpan manual.');
+      } else {
+        alert('Gagal membuat file untuk diunduh.');
+      }
+    }
   };
 
   if (!photos) {
@@ -144,7 +228,10 @@ const ResultPage = () => {
           <div className="flex w-full lg:w-1/2 flex-col justify-between gap-6 rounded-[2rem] border bg-white/70 p-8 shadow-sm">
             <div className="flex flex-col gap-4">
               <h2 className="text-2xl font-bold">Save Your Memory</h2>
-              <button onClick={downloadImage} disabled={!downloadUrl} className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg">Download Photo</button>
+              <button onClick={downloadImage} disabled={!downloadUrl && !publicUrl} className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg disabled:opacity-50">
+                Download Photo
+              </button>
+              {errorMessage && <p className="text-sm text-red-500 mt-2">{errorMessage}</p>}
             </div>
 
             <div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
@@ -158,6 +245,9 @@ const ResultPage = () => {
                   <span className="text-sm text-red-500">Gagal upload</span>
                 )}
               </div>
+              {publicUrl && (
+                <a href={publicUrl} target="_blank" rel="noreferrer" className="mt-3 text-xs text-[#6b38d4] underline">Buka link publik</a>
+              )}
             </div>
           </div>
         </section>
