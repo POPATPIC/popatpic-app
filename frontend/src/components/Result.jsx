@@ -80,7 +80,7 @@ const ResultPage = () => {
       const finalImage = canvas.toDataURL("image/png");
       setDownloadUrl(finalImage);
 
-      fetch('https://popatpic-g03qsvzg3-karima-ulya-s-projects.vercel.app/api/upload', {
+      fetch('https://popatpic.vercel.app/api/upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
