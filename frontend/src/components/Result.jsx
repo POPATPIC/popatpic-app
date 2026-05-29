@@ -176,20 +176,19 @@ const ResultPage = () => {
   <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Download via Phone</p>
   
   <div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
-    {isUploading ? (
-      <div className="flex flex-col items-center p-6">
-        <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
-        <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
-      </div>
-    ) : publicUrl ? ( 
-      // QR cuma muncul kalau publicUrl udah ada isinya
+    {/* Kita pakai downloadUrl (Base64) yang sudah ada di memori browser */}
+    {downloadUrl ? (
       <QRCodeSVG 
-        value={`https://popatpic.vercel.app/view/${encodeURIComponent(publicUrl)}`} 
+        // Menggunakan data Base64 langsung sebagai link QR
+        value={downloadUrl} 
         size={150} 
         level="L" 
       />
     ) : (
-      <span className="text-xs text-gray-400">Gagal menyiapkan QR</span>
+      <div className="flex flex-col items-center p-6">
+        <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
+        <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
+      </div>
     )}
   </div>
 </div>
