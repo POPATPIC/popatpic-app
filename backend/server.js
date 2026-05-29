@@ -15,14 +15,15 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Koneksi ke Database MySQL XAMPP
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: true 
-  }
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    ssl: { 
+        minVersion: 'TLSv1.2', 
+        rejectUnauthorized: true 
+    }
 });
 
 db.connect((err) => {
