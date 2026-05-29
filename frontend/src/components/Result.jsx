@@ -182,11 +182,10 @@ const ResultPage = () => {
       <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
     </div>
   ) : (
-    // Trik: Jika publicUrl kosong, pakai downloadUrl (Base64) sebagai cadangan!
+
 <QRCodeSVG 
-  value={publicUrl || "https://popatpic.vercel.app/"} 
+  value={`https://popatpic.vercel.app/view/${encodeURIComponent(publicUrl)}`} 
   size={150} 
-  level="L" 
 />
   )}
 </div>
