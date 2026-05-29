@@ -8,7 +8,6 @@ const ResultPage = () => {
   const canvasRef = useRef(null);
   
   const [downloadUrl, setDownloadUrl] = useState(null);
-  const [publicUrl, setPublicUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(true);
 
   const { photos, frameImage, slots, figmaWidth } = location.state || {};
@@ -79,34 +78,11 @@ const ResultPage = () => {
 
       const finalImage = canvas.toDataURL("image/png");
       setDownloadUrl(finalImage);
-
-      fetch('https://popatpic.vercel.app/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          frameId: 'classic-purple', 
-          imageBase64: finalImage
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setPublicUrl(data.url);
-        }
-        setIsUploading(false); 
-      })
-      .catch(err => {
-        console.error("Gagal mengunggah foto ke server:", err);
-        setIsUploading(false);
-      });
-
+      setIsUploading(false); // Selesai proses canvas, set loading ke false
     });
 
   }, [photos, frameImage, slots, figmaWidth]);
 
-  // NAMA FILE SUDAH DIGANTI JADI POPATPIC 
   const downloadImage = () => {
     if (!canvasRef.current || !downloadUrl) return;
     const link = document.createElement('a');
@@ -126,10 +102,7 @@ const ResultPage = () => {
   }
 
   return (
-    // Root diubah responsif seperti halaman Booth
     <div className="min-h-screen lg:h-screen flex flex-col bg-[#f7f9fb] text-[#191c1e] lg:overflow-hidden">
-      
-      {/* Lebar header disesuaikan jadi max-w-7xl */}
       <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-sm">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-12">
           <button onClick={() => navigate('/')} className="text-2xl font-extrabold tracking-tighter text-[#6b38d4]">Pop@Pic!</button>
@@ -137,7 +110,6 @@ const ResultPage = () => {
         </div>
       </header>
 
-      {/* Main dipaskan agar eye-level dan pakai max-w-7xl */}
       <main className="flex-1 mx-auto w-full max-w-7xl px-6 pt-28 pb-10 md:px-12 md:pt-32 flex flex-col lg:min-h-0">
         <div className="mb-4 flex flex-shrink-0 items-center justify-between">
           <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl">
@@ -145,55 +117,46 @@ const ResultPage = () => {
           </h1>
         </div>
 
-{/* Ganti bagian section flex ini di file ResultPage.jsx kamu */}
-<section className="flex flex-1 flex-col gap-6 lg:flex-row min-h-0">
-  
-  {/* BOX KIRI: KANVAS (Dikasih flex-1 biar dia yang ambil ruang paling banyak) */}
-  <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm items-center justify-center">
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2">
-      <canvas ref={canvasRef} className="h-full max-w-full rounded-2xl border border-gray-200 shadow-md object-contain" />
-    </div>
-  </div>
+        <section className="flex flex-1 flex-col gap-6 lg:flex-row min-h-0">
+          <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm items-center justify-center">
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2">
+              <canvas ref={canvasRef} className="h-full max-w-full rounded-2xl border border-gray-200 shadow-md object-contain" />
+            </div>
+          </div>
 
-  {/* BOX KANAN: DOWNLOAD & QR (Dibuat flex flex-col agar QR selalu punya ruang) */}
-  <div className="flex w-full lg:w-1/2 flex-col justify-between gap-6 rounded-[2rem] border bg-white/70 p-8 shadow-sm">
-    
-    {/* BAGIAN TOMBOL DOWNLOAD */}
-    <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-bold">Save Your Memory</h2>
-      <p className="text-sm text-[#494454]">Download your aesthetic photo strip directly or scan the QR code to keep it on your phone.</p>
-      <button 
-        onClick={downloadImage} 
-        disabled={!downloadUrl} 
-        className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg text-sm transition-transform hover:scale-[1.02]"
-      >
-        Download Photo
-      </button>
-    </div>
+          <div className="flex w-full lg:w-1/2 flex-col justify-between gap-6 rounded-[2rem] border bg-white/70 p-8 shadow-sm">
+            <div className="flex flex-col gap-4">
+              <h2 className="text-2xl font-bold">Save Your Memory</h2>
+              <p className="text-sm text-[#494454]">Download your aesthetic photo strip directly or scan the QR code to keep it on your phone.</p>
+              <button 
+                onClick={downloadImage} 
+                disabled={!downloadUrl} 
+                className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg text-sm transition-transform hover:scale-[1.02]"
+              >
+                Download Photo
+              </button>
+            </div>
 
-{/* BAGIAN QR CODE */}
-<div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
-  <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Download via Phone</p>
-  
-  <div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
-    {/* Kita pakai downloadUrl (Base64) yang sudah ada di memori browser */}
-    {downloadUrl ? (
-      <QRCodeSVG 
-        // Menggunakan data Base64 langsung sebagai link QR
-        value={downloadUrl} 
-        size={150} 
-        level="L" 
-      />
-    ) : (
-      <div className="flex flex-col items-center p-6">
-        <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
-        <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
-      </div>
-    )}
-  </div>
-</div>
-  </div>
-</section>
+            <div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Visit Website</p>
+              
+              <div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
+                {isUploading ? (
+                  <div className="flex flex-col items-center p-6">
+                    <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
+                  </div>
+                ) : (
+                  <QRCodeSVG 
+                    value="https://popatpic.vercel.app/" 
+                    size={150} 
+                    level="L" 
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
