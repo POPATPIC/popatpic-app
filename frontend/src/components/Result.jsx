@@ -183,10 +183,11 @@ const ResultPage = () => {
     </div>
   ) : (
     // Trik: Jika publicUrl kosong, pakai downloadUrl (Base64) sebagai cadangan!
-    <QRCodeSVG 
-      value={publicUrl || downloadUrl || "https://popatpic.com"} 
-      size={150} 
-    />
+<QRCodeSVG 
+  value={publicUrl || "https://popatpic.vercel.app/"} 
+  size={150} 
+  level="L" 
+/>
   )}
 </div>
     </div>
