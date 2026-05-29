@@ -29,14 +29,6 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Gagal nyambung ke MySQL:', err);
-  } else {
-    console.log('Berhasil tersambung ke Database popatpic_db!');
-  }
-});
-
 app.get('/', (req, res) => {
   res.send('Server Backend Pop@Pic! Berjalan Mulus!');
 });
