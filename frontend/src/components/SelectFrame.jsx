@@ -24,7 +24,7 @@ const SelectFrame = () => {
       'tape-frame.png': tapeFramePng
     };
 
-    fetch('http://localhost:5000/api/frames')
+    fetch('https://popatpic-g03qsvzg3-karima-ulya-s-projects.vercel.app/api/frames')
       .then((response) => response.json())
       .then((data) => {
         const formattedData = data.map((dbFrame) => {

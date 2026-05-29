@@ -72,7 +72,7 @@ app.post('/api/upload', (req, res) => {
 
     const photoId = `photo_${Date.now()}`;
     
-    const imageUrl = `http://localhost:5000/uploads/${fileName}`;
+    const imageUrl = `https://popatpic-g03qsvzg3-karima-ulya-s-projects.vercel.app/uploads/${fileName}`;
 
     const sql = "INSERT INTO photos (id, frame_id, image_url) VALUES (?, ?, ?)";
     db.query(sql, [photoId, frameId || 'unknown', imageUrl], (dbErr) => {
