@@ -8,6 +8,7 @@ const ResultPage = () => {
   const canvasRef = useRef(null);
   
   const [downloadUrl, setDownloadUrl] = useState(null);
+  const [publicUrl, setPublicUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(true);
 
   const { photos, frameImage, slots, figmaWidth } = location.state || {};
@@ -78,9 +79,30 @@ const ResultPage = () => {
 
       const finalImage = canvas.toDataURL("image/png");
       setDownloadUrl(finalImage);
-      setIsUploading(false); // Selesai proses canvas, set loading ke false
-    });
 
+      // Upload ke Imgur
+      const formData = new FormData();
+      formData.append('image', finalImage.split(',')[1]); 
+
+      fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Client-ID 7447432822d1039',
+        },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setPublicUrl(data.data.link);
+        }
+        setIsUploading(false);
+      })
+      .catch(err => {
+        console.error("Gagal upload ke Imgur:", err);
+        setIsUploading(false);
+      });
+    });
   }, [photos, frameImage, slots, figmaWidth]);
 
   const downloadImage = () => {
@@ -95,8 +117,7 @@ const ResultPage = () => {
     return (
       <div className="min-h-screen bg-[#f7f9fb] flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-3xl font-extrabold text-[#6b38d4] mb-4">Sesi Foto Hilang!</h2>
-        <p className="text-gray-500 mb-8 max-w-md">Yuk, mulai lagi dari depan!</p>
-        <button onClick={() => navigate('/')} className="px-8 py-4 bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] text-white font-bold rounded-full shadow-lg">Kembali ke Halaman Utama</button>
+        <button onClick={() => navigate('/')} className="px-8 py-4 bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] text-white font-bold rounded-full">Kembali ke Home</button>
       </div>
     );
   }
@@ -106,52 +127,35 @@ const ResultPage = () => {
       <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-sm">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-12">
           <button onClick={() => navigate('/')} className="text-2xl font-extrabold tracking-tighter text-[#6b38d4]">Pop@Pic!</button>
-          <button onClick={() => navigate('/')} className="rounded-full border border-[#cbc3d7] bg-white/60 px-5 py-2 text-sm font-semibold hover:bg-white transition-colors">Back to Home</button>
+          <button onClick={() => navigate('/')} className="rounded-full border border-[#cbc3d7] bg-white/60 px-5 py-2 text-sm font-semibold">Back to Home</button>
         </div>
       </header>
 
       <main className="flex-1 mx-auto w-full max-w-7xl px-6 pt-28 pb-10 md:px-12 md:pt-32 flex flex-col lg:min-h-0">
-        <div className="mb-4 flex flex-shrink-0 items-center justify-between">
-          <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl">
-            Electric Moment <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6b38d4] to-[#fd56a7]">Captured!</span>
-          </h1>
-        </div>
+        <h1 className="text-4xl font-extrabold tracking-tighter md:text-5xl mb-6">
+          Electric Moment <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6b38d4] to-[#fd56a7]">Captured!</span>
+        </h1>
 
         <section className="flex flex-1 flex-col gap-6 lg:flex-row min-h-0">
-          <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm items-center justify-center">
-            <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2">
-              <canvas ref={canvasRef} className="h-full max-w-full rounded-2xl border border-gray-200 shadow-md object-contain" />
-            </div>
+          <div className="flex w-full lg:w-1/2 rounded-[2rem] border bg-white/70 p-4 shadow-sm items-center justify-center">
+            <canvas ref={canvasRef} className="h-full max-w-full rounded-2xl border shadow-md object-contain" />
           </div>
 
           <div className="flex w-full lg:w-1/2 flex-col justify-between gap-6 rounded-[2rem] border bg-white/70 p-8 shadow-sm">
             <div className="flex flex-col gap-4">
               <h2 className="text-2xl font-bold">Save Your Memory</h2>
-              <p className="text-sm text-[#494454]">Download your aesthetic photo strip directly or scan the QR code to keep it on your phone.</p>
-              <button 
-                onClick={downloadImage} 
-                disabled={!downloadUrl} 
-                className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg text-sm transition-transform hover:scale-[1.02]"
-              >
-                Download Photo
-              </button>
+              <button onClick={downloadImage} disabled={!downloadUrl} className="w-full rounded-full bg-gradient-to-r from-[#6b38d4] to-[#fd56a7] py-4 font-bold text-white shadow-lg">Download Photo</button>
             </div>
 
             <div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Visit Website</p>
-              
+              <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to get photo</p>
               <div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
                 {isUploading ? (
-                  <div className="flex flex-col items-center p-6">
-                    <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
-                  </div>
+                  <div className="animate-pulse text-sm text-gray-500">Menyiapkan QR...</div>
+                ) : publicUrl ? (
+                  <QRCodeSVG value={publicUrl} size={150} level="L" />
                 ) : (
-                  <QRCodeSVG 
-                    value="https://popatpic.vercel.app/" 
-                    size={150} 
-                    level="L" 
-                  />
+                  <span className="text-sm text-red-500">Gagal upload</span>
                 )}
               </div>
             </div>
