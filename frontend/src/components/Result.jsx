@@ -171,25 +171,28 @@ const ResultPage = () => {
       </button>
     </div>
 
-    {/* BAGIAN QR CODE (Dikasih mt-auto supaya dia punya jarak aman) */}
-    <div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
-      <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Download via Phone</p>
-      
-<div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
-  {isUploading ? (
-    <div className="flex flex-col items-center p-6">
-      <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
-      <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
-    </div>
-  ) : (
-
-<QRCodeSVG 
-  value={`https://popatpic.vercel.app/view/${encodeURIComponent(publicUrl)}`} 
-  size={150} 
-/>
-  )}
+{/* BAGIAN QR CODE */}
+<div className="flex flex-col items-center justify-center border-t border-[#e0e3e5] pt-6 mt-auto">
+  <p className="text-xs font-bold uppercase tracking-wider text-[#fd56a7] mb-4">Scan to Download via Phone</p>
+  
+  <div className="rounded-3xl border bg-white p-5 shadow-sm flex items-center justify-center">
+    {isUploading ? (
+      <div className="flex flex-col items-center p-6">
+        <div className="w-10 h-10 border-4 border-[#6b38d4] border-t-transparent rounded-full animate-spin mb-3"></div>
+        <span className="text-xs text-gray-500 font-semibold animate-pulse">Menyiapkan QR...</span>
+      </div>
+    ) : publicUrl ? ( 
+      // QR cuma muncul kalau publicUrl udah ada isinya
+      <QRCodeSVG 
+        value={`https://popatpic.vercel.app/view/${encodeURIComponent(publicUrl)}`} 
+        size={150} 
+        level="L" 
+      />
+    ) : (
+      <span className="text-xs text-gray-400">Gagal menyiapkan QR</span>
+    )}
+  </div>
 </div>
-    </div>
   </div>
 </section>
       </main>
