@@ -9,19 +9,19 @@ const LandingPage = () => {
       id: 1,
       name: 'Pixel Pastel',
       desc: 'Soft neon, playful and vibrant.',
-      image: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=500&auto=format&fit=crop', 
+      image: 'https://i.pinimg.com/736x/a4/d1/83/a4d1839f71769b445c33808ea80d43ac.jpg', 
     },
     {
       id: 2,
       name: 'Dark Aesthetic',
       desc: 'Moody, elegant, and bold.',
-      image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=500&auto=format&fit=crop',
+      image: 'https://i.pinimg.com/736x/68/2e/eb/682eebc81470f9a2a9278e9978c1152e.jpg',
     },
     {
       id: 3,
       name: 'Floral Spring',
       desc: 'Fresh, cute, and blooming.',
-      image: 'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?q=80&w=500&auto=format&fit=crop',
+      image: 'https://i.pinimg.com/736x/9a/33/2c/9a332cb85ba736685bf9ac2ad8d09c77.jpg',
     }
   ];
 
@@ -80,37 +80,23 @@ const LandingPage = () => {
               
               {/* Tumpukan Kartu 1: Belakang Kiri */}
               <img 
-                src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=600&auto=format&fit=crop" 
+                src="https://i.pinimg.com/1200x/b5/c5/d3/b5c5d38cfe741f85c9e63c9252054852.jpg" 
                 alt="Card left" 
                 className="absolute top-4 left-0 w-2/3 aspect-[3/4] object-cover rounded-2xl shadow-xl border-[6px] border-white transform -rotate-12 transition-all duration-700 group-hover:-translate-x-10 group-hover:-translate-y-4 group-hover:-rotate-[20deg] group-hover:shadow-2xl z-10"
               />
 
               {/* Tumpukan Kartu 2: Belakang Kanan */}
               <img 
-                src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=600&auto=format&fit=crop" 
+                src="https://i.pinimg.com/1200x/5b/61/1f/5b611f4d0ab4792a02ce0bd4ed88016f.jpg" 
                 alt="Card right" 
                 className="absolute top-10 right-0 w-2/3 aspect-[3/4] object-cover rounded-2xl shadow-xl border-[6px] border-white transform rotate-12 transition-all duration-700 group-hover:translate-x-12 group-hover:translate-y-2 group-hover:rotate-[24deg] group-hover:shadow-2xl z-10"
               />
 
               {/* Tumpukan Kartu 3: Utama / Depan Tengah */}
               <img 
-                src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800&auto=format&fit=crop" 
+                src="https://i.pinimg.com/1200x/59/1f/01/591f01ab34c51059eb3ac03c9b95d48e.jpg" 
                 alt="Main card" 
                 className="absolute top-12 left-1/2 -translate-x-1/2 w-[75%] aspect-[3/4] object-cover rounded-3xl shadow-2xl border-[6px] border-white transform rotate-2 transition-all duration-700 group-hover:-translate-y-8 group-hover:rotate-0 group-hover:scale-105 z-20"
-              />
-
-              {/* FOTO KECIL - ATAS KANAN (Melayang lebih tinggi saat di-hover) */}
-              <img 
-                src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=300&auto=format&fit=crop" 
-                alt="Small polaroid 1"
-                className="absolute -top-6 -right-4 w-20 h-20 md:w-24 md:h-24 object-cover rounded-xl border-[3px] border-white shadow-xl transform rotate-[15deg] transition-all duration-700 group-hover:scale-125 group-hover:-translate-y-8 group-hover:rotate-[-5deg] z-30"
-              />
-
-              {/* FOTO KECIL - BAWAH KIRI (Melayang menjauh saat di-hover) */}
-              <img 
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop" 
-                alt="Small polaroid 2"
-                className="absolute bottom-0 -left-6 w-24 h-20 md:w-28 md:h-24 object-cover rounded-xl border-[3px] border-white shadow-xl transform -rotate-[10deg] transition-all duration-700 group-hover:scale-125 group-hover:translate-y-6 group-hover:-translate-x-4 group-hover:rotate-[15deg] z-30"
               />
               
             </div>

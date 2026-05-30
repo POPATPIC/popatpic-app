@@ -95,31 +95,30 @@ const ResultPage = () => {
         setDownloadUrl(null);
       }
 
-      // Upload ke Imgur: gunakan base64 tanpa prefix dan sertakan type=base64
+      // Upload ke ImgBB
       try {
         const base64 = canvas.toDataURL('image/png').split(',')[1];
         const formData = new FormData();
         formData.append('image', base64);
-        formData.append('type', 'base64');
 
-        fetch('https://api.imgur.com/3/image', {
+        // MASUKKAN API KEY IMGBB KAMU DI SINI
+        fetch('https://api.imgbb.com/1/upload?key=f0ef3e1c53863587cdbd3d36de9720e4', {
           method: 'POST',
-          headers: { 'Authorization': 'Client-ID 7447432822d1039' },
           body: formData
         })
         .then(res => res.json())
         .then(data => {
-          if (data && data.success && data.data && data.data.link) {
-            setPublicUrl(data.data.link);
+          if (data && data.success && data.data && data.data.url) {
+            setPublicUrl(data.data.url); // ImgBB pakai data.data.url
           } else {
-            console.error('Imgur response not success', data);
-            setErrorMessage('Upload ke Imgur gagal.');
+            console.error('ImgBB response not success', data);
+            setErrorMessage('Upload ke ImgBB gagal.');
           }
           setIsUploading(false);
         })
         .catch(err => {
-          console.error('Gagal upload ke Imgur:', err);
-          setErrorMessage('Gagal upload ke Imgur.');
+          console.error('Gagal upload ke ImgBB:', err);
+          setErrorMessage('Gagal upload ke server gambar.');
           setIsUploading(false);
         });
       } catch (err) {
