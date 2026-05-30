@@ -81,7 +81,7 @@ const BoothPage = () => {
   };
 
   return (
-    // 1. Root: min-h-screen buat mobile, lg:h-screen lg:overflow-hidden buat laptop
+    // 1. Root: min-h-screen mobile, lg:h-screen lg:overflow-hidden laptop
     <div className="min-h-screen lg:h-screen flex flex-col bg-[#f7f9fb] text-[#191c1e] lg:overflow-hidden">
       <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl shadow-sm">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-12">
@@ -101,7 +101,7 @@ const BoothPage = () => {
         {/* 3. Section: flex-col buat HP, lg:flex-row buat laptop */}
         <section className="flex flex-1 flex-col gap-6 lg:flex-row lg:min-h-0">
           
-          {/* BOX KIRI: KAMERA (Dikasih min-h-[400px] biar gak gepeng di layar kecil) */}
+          {/* BOX KIRI: KAMERA */}
           <div className="flex w-full lg:w-1/2 flex-col rounded-[2rem] border bg-white/70 p-4 shadow-sm min-h-[400px] lg:min-h-0">
             <div className="relative flex-1 overflow-hidden rounded-[1.5rem] bg-[#eceef0] flex items-center justify-center">
               <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" style={{ transform: 'scaleX(-1)' }} />

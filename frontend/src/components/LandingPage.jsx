@@ -71,7 +71,7 @@ const LandingPage = () => {
             </button>
           </div>
 
-          {/* Gambar Kanan (Grup Tumpukan Kartu Polaroid) */}
+          {/* Gambar Kanan */}
           <div className="flex-1 flex justify-center lg:justify-end w-full">
             <div className="w-full max-w-[320px] lg:max-w-[400px] aspect-[4/5] relative mt-12 lg:mt-4 group cursor-pointer">
               

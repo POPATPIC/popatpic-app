@@ -53,7 +53,7 @@ const SelectFrame = () => {
 
   const filteredFrames = allFrames.filter((f) => f.count === activeCount);
 
-  // Auto-Scroll saat milih pose
+  // Auto-Scroll 
   const handlePoseSelect = (num) => {
     setActiveCount(num);
     setTimeout(() => {
@@ -90,7 +90,7 @@ const SelectFrame = () => {
         
         {/* SECTION 1: POSE SELECTION */}
         <section className="min-h-screen flex flex-col items-center justify-center text-center pt-20">
-          {/* Teks "poses" dikasih warna gradien! */}
+          {/* Teks  */}
           <h2 className="mb-8 text-4xl font-extrabold tracking-tighter md:text-6xl">
             How many <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6b38d4] to-[#fd56a7]">poses?</span>
           </h2>
@@ -117,7 +117,7 @@ const SelectFrame = () => {
         <section ref={framesSectionRef} className="min-h-screen flex flex-col justify-center pt-10 pb-20">
           <div className="w-full">
             
-            {/* Heading Curated Frames diubah jadi label kecil elegan */}
+            {/* Heading Curated Frames */}
             <h2 className="mb-6 text-sm font-bold tracking-widest text-gray-400 uppercase text-center">
               Curated Frames
             </h2>

@@ -4,7 +4,6 @@ import LandingPage from './components/LandingPage';
 import CameraBooth from './components/Booth';
 import SelectFrame from './components/SelectFrame';
 import Result from './components/Result';
-import ViewPhoto from './components/ViewPhoto';
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <Route path="/select-frame" element={<SelectFrame />} />
         <Route path="/booth" element={<CameraBooth />} />
         <Route path="/result" element={<Result />} />
-        <Route path="/view/:encodedUrl" element={<ViewPhoto />} />
       </Routes>
     </Router>
   );
