@@ -14,7 +14,6 @@ const ResultPage = () => {
 
   const { photos, frameImage, slots, figmaWidth } = location.state || {};
 
-  // Utility: load image with crossOrigin set before src
   function loadImage(src) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -86,51 +85,44 @@ const ResultPage = () => {
 
       ctx.drawImage(loadedFrame, 0, 0);
 
-      // coba buat dataURL untuk preview/fallback
       try {
         const finalDataUrl = canvas.toDataURL('image/png');
         setDownloadUrl(finalDataUrl);
-      } catch (err) {
-        console.warn('canvas.toDataURL gagal (mungkin tainted):', err);
-        setDownloadUrl(null);
-      }
 
-      // Upload ke ImgBB
-      try {
-        const base64 = canvas.toDataURL('image/png').split(',')[1];
         const formData = new FormData();
-        formData.append('image', base64);
+        formData.append('file', finalDataUrl); 
+        
+        formData.append('upload_preset', 'popatpic-preset'); 
 
-        // MASUKKAN API KEY IMGBB KAMU DI SINI
-        fetch('https://api.imgbb.com/1/upload?key=f0ef3e1c53863587cdbd3d36de9720e4', {
+        fetch('https://api.cloudinary.com/v1_1/dlzrd1lsd/image/upload', {
           method: 'POST',
           body: formData
         })
         .then(res => res.json())
         .then(data => {
-          if (data && data.success && data.data && data.data.url) {
-            setPublicUrl(data.data.url); // ImgBB pakai data.data.url
+          if (data && data.secure_url) {
+            setPublicUrl(data.secure_url); 
           } else {
-            console.error('ImgBB response not success', data);
-            setErrorMessage('Upload ke ImgBB gagal.');
+            console.error('Cloudinary error:', data);
+            setErrorMessage('Upload ke server gagal.');
           }
           setIsUploading(false);
         })
         .catch(err => {
-          console.error('Gagal upload ke ImgBB:', err);
-          setErrorMessage('Gagal upload ke server gambar.');
+          console.error('Gagal upload ke Cloudinary:', err);
+          setErrorMessage('Koneksi upload gagal.');
           setIsUploading(false);
         });
+        // ----------------------------
+
       } catch (err) {
-        console.error('Gagal membuat base64 untuk upload (mungkin canvas tainted):', err);
-        setErrorMessage('Gagal membuat gambar untuk upload. Mungkin karena CORS.');
+        console.error('Gagal membuat gambar untuk upload:', err);
+        setErrorMessage('Gagal memproses gambar. Mungkin karena CORS.');
         setIsUploading(false);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos, frameImage, slots, figmaWidth]);
 
-  // fallback: download dari public URL (fetch -> blob -> download)
   function downloadFromUrl(url) {
     fetch(url)
       .then(res => {
@@ -149,17 +141,13 @@ const ResultPage = () => {
       })
       .catch(err => {
         console.error('Gagal download dari URL publik:', err);
-        alert('Gagal mendownload file otomatis. Silakan buka link publik dan simpan manual.');
+        alert('Gagal mendownload otomatis. Silakan buka link publik dan simpan manual.');
       });
   }
 
-  // fungsi download utama: coba toBlob, jika gagal fallback ke publicUrl atau dataURL
   const downloadImage = () => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      alert('Canvas belum siap.');
-      return;
-    }
+    if (!canvas) return;
 
     try {
       canvas.toBlob(blob => {
@@ -173,26 +161,13 @@ const ResultPage = () => {
           a.remove();
           URL.revokeObjectURL(url);
         } else {
-          if (publicUrl) {
-            downloadFromUrl(publicUrl);
-          } else if (downloadUrl) {
-            const w = window.open(downloadUrl, '_blank');
-            if (!w) alert('Pop-up diblokir. Silakan buka link publik dan simpan manual.');
-          } else {
-            alert('Gagal membuat file untuk diunduh.');
-          }
+          if (publicUrl) downloadFromUrl(publicUrl);
+          else if (downloadUrl) window.open(downloadUrl, '_blank');
         }
       }, 'image/png');
     } catch (err) {
-      console.warn('toBlob gagal (mungkin canvas tainted):', err);
-      if (publicUrl) {
-        downloadFromUrl(publicUrl);
-      } else if (downloadUrl) {
-        const w = window.open(downloadUrl, '_blank');
-        if (!w) alert('Pop-up diblokir. Silakan buka link publik dan simpan manual.');
-      } else {
-        alert('Gagal membuat file untuk diunduh.');
-      }
+      if (publicUrl) downloadFromUrl(publicUrl);
+      else if (downloadUrl) window.open(downloadUrl, '_blank');
     }
   };
 
@@ -245,7 +220,7 @@ const ResultPage = () => {
                 )}
               </div>
               {publicUrl && (
-                <a href={publicUrl} target="_blank" rel="noreferrer" className="mt-3 text-xs text-[#6b38d4] underline">Buka link publik</a>
+                <a href={publicUrl} target="_blank" rel="noreferrer" className="mt-3 text-xs text-[#6b38d4] underline">Open public link</a>
               )}
             </div>
           </div>
